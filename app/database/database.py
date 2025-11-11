@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
-from app.common.config import DatabaseConfig
+from common.config import DatabaseConfig
 
 
 dbConfig = DatabaseConfig()
