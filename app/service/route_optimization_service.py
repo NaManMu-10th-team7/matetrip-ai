@@ -2,8 +2,8 @@ import httpx
 import numpy as np
 from typing import Dict, List, Optional, Tuple
 
-from python_tsp.exact import solve_tsp_dynamic_programming
-from python_tsp.heuristics import solve_tsp_simulated_annealing
+#from python_tsp.exact import solve_tsp_dynamic_programming
+#from python_tsp.heuristics import solve_tsp_simulated_annealing
 
 from app.common.config import kakaoMobilityConfig
 from app.service.kakao_mobility_service import KakaoMobilityService
