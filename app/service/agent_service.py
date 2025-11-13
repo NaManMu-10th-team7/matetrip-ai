@@ -1,4 +1,5 @@
 import json
+import re
 
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
@@ -15,6 +16,11 @@ def safe_json_load(text: str):
     except (json.JSONDecodeError, TypeError):
         return text
 
+# <thinking> 태그 제거 함수
+def remove_thinking_tags(text: str) -> str:
+    # <thinking>으로 시작해서 </thinking>으로 끝나는 모든 내용 제거
+    return re.sub(r'<thinking>.*?</thinking>', '', text, flags=re.DOTALL).strip()
+
 def get_agent_response(agent: RunnableWithMessageHistory, query: str, session_id: str) -> dict:
     """
     사용자 쿼리와 세션 ID를 받아,
@@ -30,7 +36,7 @@ def get_agent_response(agent: RunnableWithMessageHistory, query: str, session_id
 
     # 4. 결과 파싱
     # 4-1. AI 답변 텍스트
-    ai_message = result["output"]
+    ai_message = remove_thinking_tags(result["output"])
 
     # 4-2. 도구 사용 기록 추출
     # steps 구조 : [(AgentAction, Observation), (AgentAction, Observation), ...]

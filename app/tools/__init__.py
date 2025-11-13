@@ -1,3 +1,5 @@
+from .workspace_tool import get_search_tools
+
 def create_nest_tools(user_token: str):
     """
     user_token: 쿠키에서 추출한 순수 JWT 문자열
@@ -21,5 +23,6 @@ def create_nest_tools(user_token: str):
     all_tools = []
 
     # 리스트 더하기
+    all_tools.extend(get_search_tools(headers))
 
     return all_tools

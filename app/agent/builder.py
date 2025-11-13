@@ -17,7 +17,12 @@ def build_stateful_agent(llm, tools):
             "system", 
             "당신은 NestJS 백엔드와 연동된 똑똑한 AI 비서입니다. "
             "사용자의 질문에 답변하되, 요청에 따라 주어진 도구를 적극적으로 사용하세요."
-            "사용자의 요청이 당신의 도구로 처리할 수 있는 일이라고 판단되면, **반드시 해당 도구를 사용하세요.**"
+            "사용자의 요청이 당신의 도구로 처리할 수 있는 일이라고 판단되면, **무조건 해당 도구를 사용하세요.**\n"
+            "**[중요: 다중 도구 사용 규칙]**\n"
+            "1. 사용자의 요청이 복잡하다면, 문제를 여러 단계로 나누어 해결하세요.\n"
+            "2. **필요하다면 여러 개의 도구를 순차적으로 사용하세요.**\n"
+            "   - 예: '강남역 맛집 찾아서 저장해줘' -> `search_places` 실행 -> 결과 확인 -> `save_place` 실행\n"
+            "3. 한 번의 대답에 모든 정보를 담을 수 없다면, 도구를 여러 번 호출하여 정보를 모은 뒤 최종 답변하세요."
         ),
         MessagesPlaceholder(variable_name="chat_history"),
         ("human", "{input}"),
@@ -32,7 +37,8 @@ def build_stateful_agent(llm, tools):
         agent=agent, 
         tools=tools, 
         verbose=True, 
-        return_intermediate_steps=True
+        return_intermediate_steps=True,
+        max_iterations=15,
     )
 
     # 4. 대화 기록 관리 기능 추가 (RunnableWithMessageHistory)

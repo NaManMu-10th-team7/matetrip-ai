@@ -140,11 +140,11 @@ class KakaoMobilityConfig(BaseSettings):
     )
 
 class NestJSConfig(BaseSettings):
-    # validation_alias를 사용하면 .env 파일의 변수명(NESTJS_API_BASE_URL)을 
+    # validation_alias를 사용하면 .env 파일의 변수명(NESTJS_SERVER_URL)을 
     # 파이썬 변수명(NESTJS_BACKEND_URL)으로 매핑해줍니다.
     NESTJS_BACKEND_URL: str = Field(
         default="http://localhost:3000", #http://13.125.171.175:3000
-        validation_alias="NESTJS_API_BASE_URL",
+        validation_alias="NESTJS_SERVER_URL",
         description="NestJS Backend Base URL"
     )
 
@@ -166,7 +166,7 @@ kakaoMobilityConfig = KakaoMobilityConfig()
 nestJSConfig = NestJSConfig()
 
 if not nestJSConfig.NESTJS_BACKEND_URL:
-    raise ValueError("❌ 오류: .env 파일에 NESTJS_API_BASE_URL이 설정되지 않았습니다.")
+    raise ValueError("❌ 오류: .env 파일에 NESTJS_SERVER_URL이 설정되지 않았습니다.")
 
 if not bedrockConfig.AWS_ACCESS_KEY_ID or not bedrockConfig.AWS_SECRET_ACCESS_KEY:
     raise ValueError("❌ 오류: .env 파일에 AWS 자격 증명(Access Key/Secret Key)이 없습니다.")

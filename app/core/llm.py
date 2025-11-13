@@ -17,5 +17,6 @@ global_llm = ChatBedrockConverse(
     model=bedrockConfig.BEDROCK_LLM_MODEL_ID,
     client=bedrock_client,
     temperature=0,
-    max_tokens=1000
+    max_tokens=1000,
+    disable_streaming=True
 )
