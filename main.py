@@ -9,13 +9,14 @@ import asyncio
 
 import uvicorn
 
-from app.routes import places, optimization, chat
+from app.routes import places, route, chat
 
 app = FastAPI()
 
 app.include_router(places.router)
-app.include_router(optimization.router)
 app.include_router(chat.router)
+app.include_router(route.router)
+
 
 @app.get("/")
 async def root():
