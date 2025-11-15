@@ -7,32 +7,19 @@ class PlanGenerationRequest(BaseModel):
     NestJS가 AI에게 계획 생성을 요청할 때 보낼 DTO
     """
     places: List[Any] = Field(description="장소 DTO 객체들의 리스트")
-    start_date: str = Field(description="여행 시작일 (YYYY-MM-DD)")
-    end_date: str = Field(description="여행 종료일 (YYYY-MM-DD)")
+    total_date: int = Field(description="여행 총 일수")
 
 # --- 2. AI가 반환할 데이터 (Output DTOs) ---
-# 이 모델들이 사용자님이 요청하신 JSON 구조입니다.
-class RecommendedPOI(BaseModel):
+class DailyPlanIDs(BaseModel):
     """
-    개별 장소(POI)의 상세 정보 DTO
+    하루치 계획에 포함될 장소 ID들의 리스트
     """
-    id: str = Field(description="원본 장소 ID (예 : rec_poi_123)")
-    placeName: str
-    address: str
-    latitude: float
-    longitude: float
-    categoryName: str
-    imageUrl: Optional[str] = None
-    summary: str
+    placeIDs: List[str] = Field(
+        description="선별된 장소 ID들의 리스트. 예: ['poi_123', 'poi_124']"
+    )
 
-class DailyRecommendation(BaseModel):
+class PlanResponseIDs(BaseModel):
     """
-    날짜별 일정 DTO
+    AI가 반환할 최종 ID 순서 객체
     """
-    pois: List[RecommendedPOI] = Field(description="해당 날짜에 방문할 POI 리스트")
-
-class PlanResponse(BaseModel):
-    """
-    AI가 반환할 최종 여행 계획 JSON 루트
-    """
-    recommendations: List[DailyRecommendation]
+    daily_plans: List[DailyPlanIDs]
