@@ -1,17 +1,13 @@
 from .workspace_tool import get_search_tools
 
-def create_nest_tools(user_token: str):
+def create_nest_tools():
     """
     user_token: 쿠키에서 추출한 순수 JWT 문자열
     """
-    
     # -------------------------------------------------------------
     # [중요] NestJS AuthGuard('jwt')를 통과하기 위한 헤더 설정
     # -------------------------------------------------------------
     headers = {
-        # 보통 API 통신에서는 Bearer 방식을 가장 많이 씁니다.
-        "Authorization": f"Bearer {user_token}",
-        
         "Content-Type": "application/json"
     }
     
