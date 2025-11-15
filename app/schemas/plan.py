@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Any, Optional
+from typing import List, Any
 
 # --- 1. NestJS로부터 받을 데이터 (Input DTO) ---
 class PlanGenerationRequest(BaseModel):

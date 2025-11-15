@@ -17,10 +17,12 @@ plan_prompt = ChatPromptTemplate.from_messages([
     ("system", (
         "You are a professional travel planner. Your task is to create a structured JSON itinerary **using only place IDs**.\n\n"
         "**<rules>**\n"
-        "1. **(Source Data)** You will get a <place_list> containing 'id', 'placeName', and 'summary' for each place.\n\n"
+        "1. **(Source Data)** You will get a <place_list> containing 'id', 'placeName', 'summary', 'latitude', and 'longitude'.\n\n"
         "2. **(Curation Logic)** Read the 'placeName' and 'summary' to understand each place.\n\n"
         "3. **(Grouping Logic)** Create a logical {total_date}-day plan by selecting a subset of the best places.\n"
         "   - A good plan has 2-4 places per day.\n"
+        "   - **Use the 'latitude' and 'longitude' fields to group places that are geographically close to each other on the same day.**\n"
+        "   - This proximity grouping is the most important task to minimize user travel time.\n\n"
         "   - Logically group the selected places into {total_date} separate daily plans.\n\n"
         
         "4. **(Output Format - CRITICAL)**\n"
@@ -31,7 +33,8 @@ plan_prompt = ChatPromptTemplate.from_messages([
     ("human", (
         "Here is the list of recommended places:\n"
         "<place_list>\n{places_json}\n</place_list>\n\n"
-        "Select the best places and create a {total_date}-day itinerary (IDs only)."
+        "Please select the best places, **grouping them by proximity (latitude/longitude)**, "
+        "and create a {total_date}-day itinerary (IDs only)."
     ))
 ])
 
