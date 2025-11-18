@@ -68,9 +68,10 @@ def get_workspace_tools():
                 )
                 response.raise_for_status()
                 places = response.json()
+
                 if not places:
                     return f"'{place_name}'에 해당하는 장소를 찾을 수 없습니다."
-                return places[0]  # 가장 유사한 첫 번째 결과의 ID를 반환
+                return places["placeIds"][0] # 가장 유사한 첫 번째 결과의 ID를 반환
         except Exception as e:
             return f"장소 ID 조회 중 에러 발생: {str(e)}"
 
@@ -95,8 +96,8 @@ def get_workspace_tools():
                     f"{BASE_URL}/place-user-reviews/place/{place_id}",
                 )
                 response.raise_for_status()
-                reviews = response.json()
-
+                reviews = response.json().get("data", [])
+   
                 if not reviews:
                     return "해당 장소에 대한 리뷰를 찾을 수 없습니다."
 
@@ -127,7 +128,7 @@ def get_workspace_tools():
                 )
                 response.raise_for_status()
                 data = response.json()
-                return str(data) if data else "모두를 위한 추천 장소를 찾지 못했습니다."
+                return data if data else "모두를 위한 추천 장소를 찾지 못했습니다."
 
         except Exception as e:
             return f"추천 장소 검색 중 에러 발생: {str(e)}"

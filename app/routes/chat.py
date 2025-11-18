@@ -88,8 +88,8 @@ async def ask_agent(request: ChatRequest) -> ChatResponse:
         full_history.add_user_message(request.query)
         # full_history.add_ai_message(response_dict"response"])
         full_history.add_ai_message(chatResponse.response)
-        return chatResponse
 
+        return chatResponse
     except Exception as e:
         return ChatResponse(
             response=f"처리 중 오류가 발생했습니다. : {str(e)}", tool_data=[]
