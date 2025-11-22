@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Any, List, Literal
+from typing import Any, List, Literal, Dict
 
 class ChatRequest(BaseModel):
     query: str
@@ -32,3 +32,14 @@ class IntentClassifier(BaseModel):
             "Classify as 'CONVERSATION' for casual chat or follow-up questions about previous responses (e.g., 'how do I get there?', 'tell me more')."
         )
     )
+
+# 2. [신규] 백엔드 저장용 (진짜 ID, 인자, 문자열 결과 포함)
+class InternalToolLog(BaseModel):
+    tool_call_id: str       # ★ 필수: AI가 생성한 고유 ID (tooluse_...)
+    tool_name: str
+    tool_args: Dict[str, Any] # ★ 필수: AI가 입력한 인자
+    tool_output_str: str    # ★ 필수: 기억에 저장할 문자열 형태의 결과
+
+class AgentResponseDTO(BaseModel):
+    chat_response: ChatResponse
+    internal_tool_log: List[InternalToolLog]
