@@ -1,13 +1,18 @@
 import logging
+import time
 import httpx
 import os
-from typing import Optional
+from typing import List, Optional
 from langchain_core.tools import tool
 
 from app.common.category_mapping import CATEGORY_MAPPING
 from app.service.place_service import PlaceService
 from app.database.database import get_db
-from app.schemas.place import NearbyPlaceRequest, PopularPlaceRequest
+from app.schemas.place import (
+    NearbyPlaceRequest,
+    PopularPlaceRequest,
+    PopularPlaceResponse,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +203,7 @@ def get_place_tools():
         try:
 
             if limit <= 0 or limit > 100:
-                return "limit은 1에서 100 사이의 값이어야 합니다."
+                raise ValueError(f"limit must be between 1 and 100, but got {limit}")
             # 지역명 정규화 (약칭이 있을 수 있으니.. 이거 너무 하드코딩같은데 쩔수일 듯)
             normalized_region = normalize_region_name(region.strip())
 
@@ -222,6 +227,8 @@ def get_place_tools():
 
             finally:
                 db.close()
+
+            return place_responses
 
         except ValueError as e:
             # 지역명 검증 실패 시
@@ -300,11 +307,16 @@ def get_place_tools():
             )
 
             # 1. Kakao Local API로 장소명을 좌표로 변환
+            t0 = time.perf_counter()
             try:
                 latitude, longitude = fetch_coordinates_from_address(location_name)
             except ValueError as error:
                 return str(error)
 
+            t1 = time.perf_counter()
+            print(f"[fetch_coordinates_from_address] took {t1-t0:.4f} seconds")
+
+            # 2. NearbyPlaceRequest DTO로 캡슐화
             search_request = NearbyPlaceRequest.from_coordinates(
                 latitude=latitude,
                 longitude=longitude,
@@ -316,8 +328,10 @@ def get_place_tools():
             # 2. PlaceService를 직접 호출 (같은 서버 내부 호출)
             db = next(get_db())
             try:
+                t2 = time.perf_counter()
                 place_responses = PlaceService(db).get_nearby_place(search_request)
-
+                t3 = time.perf_counter()
+                print(f"[PlaceService.get_nearby_place] took {t3-t2:.4f} seconds")
                 if not place_responses:
                     category_text = f"({mapped_category}) " if mapped_category else ""
                     return f"{location_name} 주변 {radius_km}km 이내에 {category_text}장소를 찾을 수 없습니다."

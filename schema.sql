@@ -232,6 +232,7 @@ CREATE TABLE IF NOT EXISTS poi
     place_name   TEXT             NOT NULL,
     longitude    DOUBLE PRECISION NOT NULL,
     latitude     DOUBLE PRECISION NOT NULL,
+    place_id     UUID             NULL,
     address      TEXT             NOT NULL,
     status       poi_status       NOT NULL DEFAULT 'MARKED',
     sequence INT              NOT NULL DEFAULT 0,
@@ -284,9 +285,9 @@ CREATE TABLE IF NOT EXISTS notification
 
 CREATE TABLE IF NOT EXISTS follow
 (
-    id           uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
-    follower_id  uuid        NOT NULL,
-    following_id uuid        NOT NULL,
+    id           UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    follower_id  UUID        NOT NULL,
+    following_id UUID        NOT NULL,
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -296,13 +297,14 @@ CREATE TABLE places
     id uuid PRIMARY KEY DEFAULT gen_random_uuid (),
     title text NOT NULL,
     address text NOT NULL,
-    region_group region_group_type NOT NULL,
+    region region_group_type NOT NULL,
     category text NULL,
     tags jsonb NULL, -- Optional[list[str]] → jsonb (AI 생성 태그)
     summary text NULL, -- 리뷰 기반 AI 요약
     image_url text NULL, -- 장소 대표 이미지 URL
     longitude double precision NOT NULL,
     latitude double precision NOT NULL,
+    location geography(POINT, 4326) NOT NULL, 
     embedding vector (1024) NULL, -- 장소 대표 임베딩 (리뷰 기반),
     created_at TIMESTAMPTZ DEFAULT now () NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT now () NOT NULL
@@ -317,7 +319,7 @@ CREATE TABLE place_review
     source_url text NOT NULL,
     embedding vector (1024) NULL, -- 리뷰 임베딩 (검색 정확도 향상용)
     is_deleted boolean DEFAULT false NOT NULL,
-    created_at TIMESTAMP DEFAULT now () NOT NULL
+    created_at TIMESTAMPTZ DEFAULT now () NOT NULL
 );
 
 -- ========= 2) ALTER TABLE: UNIQUE  =========
@@ -341,7 +343,7 @@ ALTER TABLE profile
 
 ALTER TABLE post
     ADD CONSTRAINT fk_post_writer
-        FOREIGN KEY (writer_id) REFERENCES users (id) ON DELETE RESTRICT;
+        FOREIGN KEY (writer_id) REFERENCES users (id) ON DELETE RESTRICT,
     ADD CONSTRAINT fk_post_image
         FOREIGN KEY (image_id) REFERENCES binary_content (id) ON DELETE SET NULL;
 
@@ -364,14 +366,8 @@ ALTER TABLE poi
         FOREIGN KEY (plan_day_id) REFERENCES plan_day (id) ON DELETE CASCADE,
     ADD CONSTRAINT fk_poi_creator
         FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE RESTRICT,
-    ADD CONSTRAINT uq_poi_schedule UNIQUE (plan_day_id, sequence);
-
-
--- ALTER TABLE poi_connection
---     ADD CONSTRAINT fk_conn_prev FOREIGN KEY (prev_poi_id) REFERENCES poi (id) ON DELETE CASCADE,
---     ADD CONSTRAINT fk_conn_next FOREIGN KEY (next_poi_id) REFERENCES poi (id) ON DELETE CASCADE,
---     ADD CONSTRAINT fk_conn_planday FOREIGN KEY (plan_day_id) REFERENCES plan_day (id) ON DELETE CASCADE;
---     -- ADD CONSTRAINT fk_conn_creator FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL;
+    ADD CONSTRAINT fk_poi_place
+        FOREIGN KEY (place_id) REFERENCES places (id) ON DELETE SET NULL;
 
 ALTER TABLE post_participation
     ADD CONSTRAINT fk_pp_user FOREIGN KEY (requester_id) REFERENCES users (id) ON DELETE CASCADE,
@@ -384,7 +380,6 @@ ALTER TABLE review
 
 ALTER TABLE notification
     ADD CONSTRAINT fk_notification_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
-
 
 ALTER TABLE follow
     ADD CONSTRAINT fk_follow_follower
@@ -442,7 +437,7 @@ CREATE TABLE user_behavior_embeddings (
 ALTER TABLE user_behavior_events
     ADD CONSTRAINT fk_user_behavior_events_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     ADD CONSTRAINT fk_user_behavior_events_place FOREIGN KEY (place_id) REFERENCES places (id) ON DELETE SET NULL,
-    ADD CONSTRAINT fk_user_behavior_events_plan_day FOREIGN KEY (plan_day_id) REFERENCES plan_day (id) ON DELETE SET NULL;
+    ADD CONSTRAINT fk_user_behavior_events_plan_day FOREIGN KEY (plan_day_id) REFERENCES plan_day (id) ON DELETE SET NULL,
     ADD CONSTRAINT fk_user_behavior_events_workspace FOREIGN KEY (workspace_id) REFERENCES workspace (id) ON DELETE SET NULL;
 
 
