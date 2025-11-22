@@ -55,6 +55,21 @@ workspace_context = (
     "</Workspace_context>\n"
 )
 
+# 후속 작업 규칙
+follow_up_rules = (
+    "<Follow-up Action Rules>\n"
+    "When the user asks to perform an action on a previous result (e.g., 'add the first one to my schedule', 'tell me more about the second option'), you MUST follow these steps:\n"
+    "1. **NEVER** parse your own previous natural language response to find the item.\n"
+    "2. **ALWAYS** look at the `chat_history` and find the most recent `ToolMessage` that contains the list of places.\n"
+    "3. The content of that `ToolMessage` is a structured list of items (usually JSON). Base your understanding of 'first', 'second', etc., on the order of items in THAT structured list.\n"
+    "4. Extract the correct `place_id` from the structured data in the `ToolMessage` to use in the follow-up tool call (e.g., `add_place_in_travel_itinerary`).\n"
+    "\n"
+    "Example:\n"
+    "- User says: 'Add the first one to day 1.'\n"
+    "- Your Action: Look at the `ToolMessage` in history, get the `id` of the first object in the list, and call `add_place_in_travel_itinerary(place_id='...', day_no=1)`.\n"
+    "</Follow-up Action Rules>\n"
+)
+
 # 의사결정 규칙 : 어떤 사용자 표현 -> 어떤 도구 (모호할 때는 물어보기)
 tool_eligibility = (
     "<Tool Eligibility>\n"
@@ -115,6 +130,7 @@ def build_stateful_agent(llm, tools) -> AgentExecutor:
         f"{role}\n\n"
         f"{critical_guardrails}\n\n"
         f"{workspace_context}\n\n"
+        f"{follow_up_rules}\n\n"
         f"{tool_eligibility}\n\n"
         f"{error_handling}\n\n"
         f"{disambiguation}\n\n"

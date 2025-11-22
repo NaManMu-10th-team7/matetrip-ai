@@ -130,6 +130,7 @@ async def ask_agent(request: ChatRequest) -> ChatResponse:
 
         # 4. 대화 기록 수동 저장
         full_history.add_user_message(request.query)
+        full_history.add_ai_message(chat_response.response)
 
         # (2) [신규] 도구 데이터(tool_data) 저장
         #     이걸 저장해야 "거기 전화번호 뭐야?" 같은 후속 질문에 대답할 수 있습니다.
@@ -158,7 +159,7 @@ async def ask_agent(request: ChatRequest) -> ChatResponse:
                 )
                 full_history.add_message(tool_msg)
 
-        full_history.add_ai_message(chat_response.response)
+        
 
         return chat_response
     except Exception as e:
