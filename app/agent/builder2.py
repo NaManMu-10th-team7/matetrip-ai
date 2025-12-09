@@ -1,8 +1,9 @@
 """
-에이전트 시스템 프롬프트 정의
+에이전트 시스템 프롬프트 정의 (Prompt Caching 최적화 적용)
 """
 
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import SystemMessage
 
 
 # 역할 정의
@@ -146,9 +147,16 @@ DISAMBIGUATION = (
 
 def build_agent_prompt() -> ChatPromptTemplate:
     """
-    에이전트용 프롬프트 템플릿 생성
+    에이전트용 프롬프트 템플릿 생성 (Prompt Caching 적용)
+
+    AWS Bedrock의 Prompt Caching을 활성화하여 반복되는 시스템 프롬프트를
+    캐시에 저장하고 재사용함으로써 토큰 사용량과 비용을 절감합니다.
+
+    Cache Point는 System Prompt 뒤에 추가되어, 이후 모든 요청에서
+    해당 프롬프트가 캐시에서 읽혀집니다 (최초 1회 cache_write, 이후 cache_read)
     """
-    system_prompt = (
+    # 메인 시스템 프롬프트 (캐싱 대상)
+    main_system_prompt = (
         f"{ROLE}\n\n"
         f"{CRITICAL_GUARDRAILS}\n\n"
         f"{RESPONSE_RULES}\n\n"
@@ -159,9 +167,24 @@ def build_agent_prompt() -> ChatPromptTemplate:
         f"{DISAMBIGUATION}"
     )
 
+    # AWS Bedrock Prompt Caching 활성화
+    cached_system_message = SystemMessage(
+        content=[
+            {
+                "type": "text",
+                "text": main_system_prompt,
+            },
+            {
+                "cachePoint": {
+                    "type": "default",
+                },
+            },
+        ]
+    )
+
     return ChatPromptTemplate.from_messages(
         [
-            ("system", system_prompt),
+            cached_system_message,
             MessagesPlaceholder(variable_name="chat_history", optional=True),
             ("system", "User's workspace_id: {session_id}"),
             (
